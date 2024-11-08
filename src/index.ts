@@ -1,15 +1,21 @@
 import express from 'express';
-import dotenv from 'dotenv';
-import connectDB from './config/db-connection'; // Sesuaikan jalur import sesuai struktur Anda
+import connectDB from './db-connection';
+import bookRoutes from './routes/book.route';
 
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Database Connection
 connectDB();
 
+const app = express();
+app.use(express.json()); // Middleware untuk parse JSON
+
+connectDB()
+
+app.get('/', (req, res) => {
+    res.send('Hello World');
+})
+
+app.use('/book', bookRoutes); // Gunakan book routes
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
