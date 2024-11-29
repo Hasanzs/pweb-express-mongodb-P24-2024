@@ -11,7 +11,14 @@ const port = process.env.PORT;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Sesuaikan dengan frontend Anda
+    methods: ["GET", "POST", "PUT", "DELETE"], // Atur metode HTTP yang diizinkan
+    credentials: true, // Jika menggunakan cookie atau header otentikasi
+  })
+);
+
 
 // Connect to MongoDB
 connectDB();
