@@ -1,57 +1,87 @@
-import Book from '../models/book.model';
-import { Request, Response } from 'express';
+import formatResponse from "@/utils/formatResponse";
+import type { NextFunction, Request, Response } from "express";
+import BookService from "../services/book.service";
 
-export const addBook = async (req: Request, res: Response) => {
+export class BookController {
+  async addBook(req: Request, res: Response) {
     try {
-        const newBook = new Book(req.body);
-        await newBook.save();
-        res.status(201).send(newBook);
+      const book = await BookService.addBook(req.body);
+      const response = formatResponse(
+        "success",
+        "Successfully get all books",
+        book,
+      );
+      res.status(201).json(response);
     } catch (error) {
-        res.status(400).send(error);
+      const response = formatResponse("failed", error.message);
+      res.status(400).json(response);
     }
-};
+  }
 
-export const getAllBooks = async (req: Request, res: Response) => {
+  async getAllBooks(req: Request, res: Response) {
     try {
-        const books = await Book.find({});
-        res.status(200).send(books);
+      const books = await BookService.getAllBooks();
+      const response = formatResponse("success", "Successfully get book", books);
+      res.status(200).json(response);
     } catch (error) {
-        res.status(500).send(error);
+      const response = formatResponse("failed", error.message);
+      res.status(500).json(response);
     }
-};
+  }
 
-export const getBookById = async (req: Request, res: Response) => {
+  async getBookById(req: Request, res: Response) {
     try {
-        const book = await Book.findById(req.params.id);
-        if (!book) {
-             res.status(404).send();
-        }
-        res.send(book);
+      const book = await BookService.getBookById(req.params.id);
+      if (!book) {
+        res.status(404).json({ message: "Book not found" });
+        return;
+      }
+      res.json(book);
     } catch (error) {
-        res.status(500).send(error);
+      const response = formatResponse("failed", error.message);
+      res.status(500).json(response);
     }
-};
+  }
 
-export const updateBook = async (req: Request, res: Response) => {
+  async modifyBook(req: Request, res: Response) {
     try {
-        const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-        if (!book) {
-             res.status(404).send();
-        }
-        res.send(book);
+      const book = await BookService.modifyBook(req.params.id, req.body);
+      const response = formatResponse(
+        "success",
+        "Successfully update book",
+        book,
+      );
+      res.status(200).json(response);
     } catch (error) {
-        res.status(400).send(error);
+      const response = formatResponse("failed", error.message);
+      if (error.message.includes("Invalid book ID format")) {
+        res.status(400).json(response);
+      } else if (error.message.includes("not found")) {
+        res.status(404).json(response);
+      } else {
+        res.status(500).json(response);
+      }
     }
-};
+  }
 
-export const deleteBook = async (req: Request, res: Response) => {
+  async removeBook(req: Request, res: Response) {
     try {
-        const book = await Book.findByIdAndDelete(req.params.id);
-        if (!book) {
-            res.status(404).send();
-        }
-        res.send(book);
+      const book = await BookService.removeBook(req.params.id);
+      const response = formatResponse(
+        "success",
+        "Successfully delete book",
+        book,
+      );
+      res.status(200).json(response);
     } catch (error) {
-        res.status(500).send(error);
+      const response = formatResponse("failed", error.message);
+      if (error.message.includes("Invalid book ID format")) {
+        res.status(400).json(response);
+      } else if (error.message.includes("not found")) {
+        res.status(404).json(response);
+      } else {
+        res.status(500).json(response);
+      }
     }
-};
+  }
+}
